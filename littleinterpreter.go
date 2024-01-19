@@ -221,14 +221,14 @@ func GenerateTokens(src []byte) []TokenInfo {
 			os.Exit(1)
 		}
 
-		src = src[bytesConsumed:]
-
 		if currTok.tokType != TT_SPACE {
 			toks = append(toks, currTok)
 		}
 
 		if currTok.tokType == TT_EOF {
 			isDone = true
+		} else {
+			src = src[bytesConsumed:]
 		}
 	}
 
