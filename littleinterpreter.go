@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 )
@@ -15,5 +14,7 @@ func main() {
 
 	data = append(data, 0x0a)
 
-	fmt.Println(GenerateBytecode(GenerateTokens(data)))
+	vm := VMCreate(GenerateBytecode(GenerateTokens(data)))
+	VMIsDebuggerOn = true
+	VMRun(vm)
 }

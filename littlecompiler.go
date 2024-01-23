@@ -30,6 +30,8 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 
 	var blankLiterals []int
 
+	var whileLoopAddr []uint32
+
 	var GLOBAL_SCOPE int = 1
 	var currScope int = GLOBAL_SCOPE
 
@@ -55,6 +57,7 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 		bytecode[i+1] = uint8((v >> 8) & 0xff)
 		bytecode[i+2] = uint8((v >> 16) & 0xff)
 		bytecode[i+3] = uint8((v >> 24) & 0xff)
+		blankLiterals = blankLiterals[:len(blankLiterals)-1]
 	}
 
 	peek := func() TokenInfo {
@@ -74,14 +77,14 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 		return advance()
 	}
 
-	addVarToSymTable := func(varIdent string, varScope int) int {
+	addVarToSymTable := func(varIdent string) int {
 		var varAddr uint32
 
 		for _, s := range symTable {
 			if s.symType == ST_VAR {
-				if s.symScope == GLOBAL_SCOPE && varScope == GLOBAL_SCOPE {
+				if s.symScope == GLOBAL_SCOPE && currScope == GLOBAL_SCOPE {
 					varAddr++
-				} else if s.symScope > GLOBAL_SCOPE && varScope > GLOBAL_SCOPE {
+				} else if s.symScope > GLOBAL_SCOPE && currScope > GLOBAL_SCOPE {
 					varAddr++
 				}
 			}
@@ -91,7 +94,7 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 		s.symType = ST_VAR
 		s.symIdent = varIdent
 		s.symAddr = varAddr
-		s.symScope = varScope
+		s.symScope = currScope
 		s.symArgCount = 0
 
 		var index int = len(symTable)
@@ -112,14 +115,18 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 		return index
 	}
 
-	removeSymFromSymTable := func() {
+	removeSymFromSymTable := func() int {
+		var symRemovedCount int = 0
 		var newSymTable []SymInfo
 		for _, b := range symTable {
 			if b.symScope <= currScope {
 				newSymTable = append(newSymTable, b)
+			} else {
+				symRemovedCount++
 			}
 		}
 		symTable = newSymTable
+		return symRemovedCount
 	}
 
 	findSym := func(symIdent string) SymInfo {
@@ -149,24 +156,22 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 	}
 
 	BinaryTokOpcode := map[TokenType]byte{
-		TT_ADD:  OP_ADD,
-		TT_SUB:  OP_SUB,
-		TT_MUL:  OP_MUL,
-		TT_QUO:  OP_QUO,
-		TT_REM:  OP_REM,
-		TT_AND:  OP_AND,
-		TT_OR:   OP_OR,
-		TT_XOR:  OP_XOR,
-		TT_SHL:  OP_SHL,
-		TT_SHR:  OP_SHR,
-		TT_LAND: OP_LAND,
-		TT_LOR:  OP_LOR,
-		TT_EQL:  OP_EQL,
-		TT_LSS:  OP_LSS,
-		TT_GTR:  OP_GTR,
-		TT_NEQ:  OP_NEQ,
-		TT_LEQ:  OP_LEQ,
-		TT_GEQ:  OP_GEQ,
+		TT_ADD: OP_ADD,
+		TT_SUB: OP_SUB,
+		TT_MUL: OP_MUL,
+		TT_QUO: OP_QUO,
+		TT_REM: OP_REM,
+		TT_AND: OP_AND,
+		TT_OR:  OP_OR,
+		TT_XOR: OP_XOR,
+		TT_SHL: OP_SHL,
+		TT_SHR: OP_SHR,
+		TT_EQL: OP_EQL,
+		TT_LSS: OP_LSS,
+		TT_GTR: OP_GTR,
+		TT_NEQ: OP_NEQ,
+		TT_LEQ: OP_LEQ,
+		TT_GEQ: OP_GEQ,
 	}
 
 	var compileExpr func()
@@ -180,16 +185,16 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 
 	compileGrouping = func() {
 		consume(TT_LPAREN)
-		var c int = 0
 		if peek().tokType == TT_MUL {
+			var count int = 0
 			for peek().tokType == TT_MUL {
 				consume(TT_MUL)
-				c++
+				count++
 			}
 			compileGrouping()
-			for c != 0 {
+			for count != 0 {
 				emitInst(OP_LOAD_MEM)
-				c--
+				count--
 			}
 		} else {
 			compileUnary(false)
@@ -230,21 +235,40 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 		switch peek().tokType {
 		case TT_VAR:
 			consume(TT_VAR)
-			addVarToSymTable(consume(TT_IDENT).tokStr, currScope)
+			varIdent := consume(TT_IDENT).tokStr
+
+			if currScope == GLOBAL_SCOPE {
+				addVarToSymTable(varIdent)
+			} else {
+				emitPushLitInst(0)
+
+				if peek().tokType == TT_ASSIGN {
+					consume(TT_ASSIGN)
+					compileExpr()
+					emitPushLitInst(symTable[addVarToSymTable(varIdent)].symAddr)
+					emitInst(OP_STORE_LOCAL)
+				} else {
+					addVarToSymTable(varIdent)
+				}
+			}
 			consume(TT_NEW_LINE)
 
 		case TT_FUNC:
 			consume(TT_FUNC)
-			i := addFuncToSymTable(consume(TT_IDENT).tokStr)
 			currScope++
+			index := addFuncToSymTable(consume(TT_IDENT).tokStr)
 			consume(TT_LPAREN)
-			for peek().tokType != TT_NEW_LINE {
+			for peek().tokType != TT_RPAREN {
 				if peek().tokType != TT_RPAREN {
-					addVarToSymTable(consume(TT_IDENT).tokStr, currScope)
-					symTable[i].symArgCount++
+					emitPushLitInst(0)
+					addVarToSymTable(consume(TT_IDENT).tokStr)
+					symTable[index].symArgCount++
 				}
-				advance()
+				if peek().tokType != TT_RPAREN {
+					consume(TT_COMMA)
+				}
 			}
+			consume(TT_RPAREN)
 			consume(TT_NEW_LINE)
 
 		case TT_IDENT:
@@ -259,10 +283,56 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 				compileExpr()
 				emitInst(OP_POP_LITERAL)
 			}
+
+		case TT_IF:
+			consume(TT_IF)
+			currScope++
+			emitPushLitBlackInst()
+			compileExpr()
+			emitInst(OP_BRANCH)
+			consume(TT_NEW_LINE)
+
+		case TT_WHILE:
+			consume(TT_WHILE)
+			currScope++
+			whileLoopAddr = append(whileLoopAddr, uint32(len(bytecode)))
+			emitPushLitBlackInst()
+			compileExpr()
+			emitInst(OP_BRANCH)
+			consume(TT_NEW_LINE)
+
 		case TT_END:
 			consume(TT_END)
 			currScope--
-			removeSymFromSymTable()
+			count := removeSymFromSymTable()
+			for count != 0 {
+				emitInst(OP_POP_LITERAL)
+				count--
+			}
+
+			switch peek().tokType {
+			case TT_FUNC:
+				if currScope != GLOBAL_SCOPE {
+					fmt.Println("Error while compiling")
+					os.Exit(1)
+				}
+
+			case TT_IF:
+				fillPushLitBlackInst(uint32(len(bytecode)))
+
+			case TT_WHILE:
+				emitPushLitInst(whileLoopAddr[len(whileLoopAddr)-1])
+				emitInst(OP_JUMP)
+				whileLoopAddr = whileLoopAddr[:len(whileLoopAddr)-1]
+				fillPushLitBlackInst(uint32(len(bytecode)))
+
+			default:
+				fmt.Println("Error while compiling")
+				os.Exit(1)
+			}
+
+			advance()
+			consume(TT_NEW_LINE)
 		case TT_NEW_LINE:
 			consume(TT_NEW_LINE)
 		default:
