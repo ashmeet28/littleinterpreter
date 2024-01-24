@@ -228,8 +228,10 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 		}
 	}
 
+	emitPushLitInst(0)
 	emitPushLitBlackInst()
-	emitInst(OP_JUMP)
+	emitInst(OP_CALL)
+	emitInst(OP_ECALL)
 
 	for peek().tokType != TT_EOF {
 		switch peek().tokType {
@@ -277,12 +279,41 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 				consume(TT_ASSIGN)
 				compileExpr()
 				emitPushLitInst(sym.symAddr)
-				emitInst(OP_STORE_LOCAL)
+				if sym.symScope == GLOBAL_SCOPE {
+					emitInst(OP_STORE_GLOBAL)
+				} else {
+					emitInst(OP_STORE_LOCAL)
+				}
 				consume(TT_NEW_LINE)
 			} else {
 				compileExpr()
 				emitInst(OP_POP_LITERAL)
+				consume(TT_NEW_LINE)
 			}
+
+		case TT_MUL:
+			var count int = 0
+			for peek().tokType == TT_MUL {
+				consume(TT_MUL)
+				count++
+			}
+			consume(TT_LPAREN)
+			sym := findSym(consume(TT_IDENT).tokStr)
+			consume(TT_RPAREN)
+			consume(TT_ASSIGN)
+			compileExpr()
+			emitPushLitInst(sym.symAddr)
+			if sym.symScope == GLOBAL_SCOPE {
+				emitInst(OP_LOAD_GLOBAL)
+			} else {
+				emitInst(OP_LOAD_LOCAL)
+			}
+			count--
+			for count != 0 {
+				emitInst(OP_LOAD_MEM)
+				count--
+			}
+			emitInst(OP_STORE_MEM)
 
 		case TT_IF:
 			consume(TT_IF)
@@ -301,6 +332,12 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 			emitInst(OP_BRANCH)
 			consume(TT_NEW_LINE)
 
+		case TT_RETURN:
+			consume(TT_RETURN)
+			compileExpr()
+			emitInst(OP_RETURN)
+			consume(TT_NEW_LINE)
+
 		case TT_END:
 			consume(TT_END)
 			currScope--
@@ -316,6 +353,8 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 					fmt.Println("Error while compiling")
 					os.Exit(1)
 				}
+				emitPushLitInst(0)
+				emitInst(OP_RETURN)
 
 			case TT_IF:
 				fillPushLitBlackInst(uint32(len(bytecode)))
@@ -330,9 +369,9 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 				fmt.Println("Error while compiling")
 				os.Exit(1)
 			}
-
 			advance()
 			consume(TT_NEW_LINE)
+
 		case TT_NEW_LINE:
 			consume(TT_NEW_LINE)
 		default:

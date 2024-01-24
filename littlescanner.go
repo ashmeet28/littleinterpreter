@@ -182,11 +182,11 @@ func GenerateToken(src []byte) (TokenInfo, int) {
 		currTok.tokStr = srcLine[:i]
 		bytesConsumed = len(currTok.tokStr)
 
-	} else if srcLine[i] == 0x22 {
+	} else if srcLine[i] == 0x27 {
 
 		i++
 		for i < len(srcLine) {
-			if srcLine[i] == 0x22 && srcLine[i-1] != 0x5c {
+			if srcLine[i] == 0x27 {
 				currTok.tokType = TT_STRING
 				currTok.tokStr = srcLine[1:i]
 				bytesConsumed = len(currTok.tokStr) + 2

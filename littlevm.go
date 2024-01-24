@@ -196,6 +196,24 @@ func VMExecInst(vm VMState) VMState {
 		vm.sp -= 2
 		vm.pc++
 
+	case OP_LOAD_GLOBAL:
+		vm.s[vm.sp-1] = vm.g[vm.s[vm.sp-1]]
+		vm.pc++
+
+	case OP_STORE_GLOBAL:
+		vm.g[vm.s[vm.sp-1]] = vm.s[vm.sp-2]
+		vm.sp -= 2
+		vm.pc++
+
+	case OP_LOAD_MEM:
+		vm.s[vm.sp-1] = vm.mem[vm.s[vm.sp-1]]
+		vm.pc++
+
+	case OP_STORE_MEM:
+		vm.mem[vm.s[vm.sp-1]] = vm.s[vm.sp-2]
+		vm.sp -= 2
+		vm.pc++
+
 	case OP_JUMP:
 		vm.pc = vm.s[vm.sp-1]
 		vm.sp--
@@ -221,6 +239,7 @@ func VMExecInst(vm VMState) VMState {
 
 	case OP_RETURN:
 		vm.rv = vm.s[vm.sp-1]
+
 		vm.sp = vm.rs[vm.rsp-1]
 		vm.sfp = vm.rs[vm.rsp-2]
 		vm.pc = vm.rs[vm.rsp-3]
@@ -243,11 +262,13 @@ func VMExecInst(vm VMState) VMState {
 
 		fmt.Println("s", vm.s[:32])
 		fmt.Println("sp", vm.sp)
-		fmt.Println("fp", vm.sfp)
+		fmt.Println("sfp", vm.sfp)
 
 		fmt.Println("rs", vm.rs[:32])
 		fmt.Println("rsp", vm.rsp)
 		fmt.Println("rv", vm.rv)
+
+		fmt.Println("mem", vm.mem[:32])
 
 		fmt.Println("-")
 		fmt.Println("-")
@@ -290,6 +311,8 @@ func VMCreate(bytecode []byte) VMState {
 	vm.rsp = 0
 	vm.rs = make([]uint32, 16777216)
 	vm.rv = 0
+
+	vm.mem = make([]uint32, 16777216)
 
 	vm.status = VM_STATUS_READY
 
