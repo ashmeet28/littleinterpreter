@@ -15,34 +15,36 @@ var (
 	OP_NOP   byte = 1
 	OP_ECALL byte = 2
 
-	OP_ADD byte = 4  // +
-	OP_SUB byte = 5  // -
-	OP_MUL byte = 6  // *
-	OP_QUO byte = 7  // /
-	OP_REM byte = 8  // %
-	OP_AND byte = 9  // &
-	OP_OR  byte = 10 // |
-	OP_XOR byte = 11 // ^
-	OP_SHL byte = 12 // <<
-	OP_SHR byte = 13 // >>
-	OP_EQL byte = 16 // ==
-	OP_LSS byte = 17 // <
-	OP_GTR byte = 18 // >
-	OP_NEQ byte = 19 // !=
-	OP_LEQ byte = 20 // <=
-	OP_GEQ byte = 21 // >=
+	OP_ADD byte = 8  // +
+	OP_SUB byte = 9  // -
+	OP_MUL byte = 10 // *
+	OP_QUO byte = 11 // /
+	OP_REM byte = 12 // %
+	OP_AND byte = 13 // &
+	OP_OR  byte = 14 // |
+	OP_XOR byte = 15 // ^
+	OP_SHL byte = 16 // <<
+	OP_SHR byte = 17 // >>
+	OP_EQL byte = 18 // ==
+	OP_LSS byte = 19 // <
+	OP_GTR byte = 20 // >
+	OP_NEQ byte = 21 // !=
+	OP_LEQ byte = 22 // <=
+	OP_GEQ byte = 23 // >=
 
-	OP_PUSH_LITERAL byte = 32
-	OP_POP_LITERAL  byte = 33
+	OP_PUSH_LITERAL byte = 24
+	OP_POP_LITERAL  byte = 25
 
-	OP_LOAD_LOCAL  byte = 34
-	OP_STORE_LOCAL byte = 35
+	OP_LOAD_LOCAL  byte = 26
+	OP_STORE_LOCAL byte = 27
 
-	OP_LOAD_GLOBAL  byte = 36
-	OP_STORE_GLOBAL byte = 37
+	OP_LOAD_GLOBAL  byte = 28
+	OP_STORE_GLOBAL byte = 29
 
-	OP_STORE_MEM byte = 38
-	OP_LOAD_MEM  byte = 39
+	OP_STORE_MEM byte = 30
+	OP_LOAD_MEM  byte = 31
+
+	OP_STORE_STR_MEM byte = 32
 
 	OP_JUMP   byte = 40
 	OP_BRANCH byte = 41
