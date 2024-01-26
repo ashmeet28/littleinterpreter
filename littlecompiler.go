@@ -196,6 +196,14 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 				emitInst(OP_GET_MEM)
 				count--
 			}
+		} else if peek().tokType == TT_ADD {
+			consume(TT_ADD)
+			v, _ := strconv.ParseInt("+"+consume(TT_INT).tokStr, 0, 64)
+			emitPushLitInst(uint32(v))
+		} else if peek().tokType == TT_SUB {
+			consume(TT_SUB)
+			v, _ := strconv.ParseInt("-"+consume(TT_INT).tokStr, 0, 64)
+			emitPushLitInst(uint32(v))
 		} else {
 			compileUnary(false)
 		}

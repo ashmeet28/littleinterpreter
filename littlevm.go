@@ -92,6 +92,21 @@ func VMExecInst(vm VMState) VMState {
 		vm.sp--
 		vm.pc++
 
+	case OP_MUL:
+		vm.s[vm.sp-2] = uint32(int32(vm.s[vm.sp-2]) * int32(vm.s[vm.sp-1]))
+		vm.sp--
+		vm.pc++
+
+	case OP_QUO:
+		vm.s[vm.sp-2] = uint32(int32(vm.s[vm.sp-2]) / int32(vm.s[vm.sp-1]))
+		vm.sp--
+		vm.pc++
+
+	case OP_REM:
+		vm.s[vm.sp-2] = uint32(int32(vm.s[vm.sp-2]) % int32(vm.s[vm.sp-1]))
+		vm.sp--
+		vm.pc++
+
 	case OP_AND:
 		vm.s[vm.sp-2] = vm.s[vm.sp-2] & vm.s[vm.sp-1]
 		vm.sp--
@@ -108,12 +123,12 @@ func VMExecInst(vm VMState) VMState {
 		vm.pc++
 
 	case OP_SHL:
-		vm.s[vm.sp-2] = vm.s[vm.sp-2] << vm.s[vm.sp-1]
+		vm.s[vm.sp-2] = uint32(int32(vm.s[vm.sp-2]) << int32(vm.s[vm.sp-1]))
 		vm.sp--
 		vm.pc++
 
 	case OP_SHR:
-		vm.s[vm.sp-2] = vm.s[vm.sp-2] >> vm.s[vm.sp-1]
+		vm.s[vm.sp-2] = uint32(int32(vm.s[vm.sp-2]) >> int32(vm.s[vm.sp-1]))
 		vm.sp--
 		vm.pc++
 
@@ -128,7 +143,7 @@ func VMExecInst(vm VMState) VMState {
 		vm.pc++
 
 	case OP_LSS:
-		if vm.s[vm.sp-2] < vm.s[vm.sp-1] {
+		if int32(vm.s[vm.sp-2]) < int32(vm.s[vm.sp-1]) {
 			vm.s[vm.sp-2] = 1
 		} else {
 			vm.s[vm.sp-2] = 0
@@ -138,7 +153,7 @@ func VMExecInst(vm VMState) VMState {
 		vm.pc++
 
 	case OP_GTR:
-		if vm.s[vm.sp-2] > vm.s[vm.sp-1] {
+		if int32(vm.s[vm.sp-2]) > int32(vm.s[vm.sp-1]) {
 			vm.s[vm.sp-2] = 1
 		} else {
 			vm.s[vm.sp-2] = 0
@@ -158,7 +173,7 @@ func VMExecInst(vm VMState) VMState {
 		vm.pc++
 
 	case OP_LEQ:
-		if vm.s[vm.sp-2] <= vm.s[vm.sp-1] {
+		if int32(vm.s[vm.sp-2]) <= int32(vm.s[vm.sp-1]) {
 			vm.s[vm.sp-2] = 1
 		} else {
 			vm.s[vm.sp-2] = 0
@@ -168,7 +183,7 @@ func VMExecInst(vm VMState) VMState {
 		vm.pc++
 
 	case OP_GEQ:
-		if vm.s[vm.sp-2] >= vm.s[vm.sp-1] {
+		if int32(vm.s[vm.sp-2]) >= int32(vm.s[vm.sp-1]) {
 			vm.s[vm.sp-2] = 1
 		} else {
 			vm.s[vm.sp-2] = 0
@@ -214,6 +229,20 @@ func VMExecInst(vm VMState) VMState {
 	case OP_SET_MEM:
 		vm.mem[vm.s[vm.sp-1]] = vm.s[vm.sp-2]
 		vm.sp -= 2
+		vm.pc++
+
+	case OP_SET_MEM_STR:
+		var addr uint32 = vm.s[vm.sp-1]
+		vm.sp--
+		for {
+			vm.mem[addr] = vm.s[vm.sp-1]
+			if vm.s[vm.sp-1] != 0 {
+				addr++
+				vm.sp--
+			} else {
+				break
+			}
+		}
 		vm.pc++
 
 	case OP_JUMP:
