@@ -35,16 +35,16 @@ var (
 	OP_PUSH_LITERAL byte = 24
 	OP_POP_LITERAL  byte = 25
 
-	OP_LOAD_LOCAL  byte = 26
-	OP_STORE_LOCAL byte = 27
+	OP_GET_LOCAL byte = 26
+	OP_SET_LOCAL byte = 27
 
-	OP_LOAD_GLOBAL  byte = 28
-	OP_STORE_GLOBAL byte = 29
+	OP_GET_GLOBAL byte = 28
+	OP_SET_GLOBAL byte = 29
 
-	OP_STORE_MEM byte = 30
-	OP_LOAD_MEM  byte = 31
+	OP_GET_MEM byte = 30
+	OP_SET_MEM byte = 31
 
-	OP_STORE_STR_MEM byte = 32
+	OP_SET_MEM_STR byte = 32
 
 	OP_JUMP   byte = 40
 	OP_BRANCH byte = 41
@@ -189,29 +189,29 @@ func VMExecInst(vm VMState) VMState {
 		vm.sp--
 		vm.pc++
 
-	case OP_LOAD_LOCAL:
+	case OP_GET_LOCAL:
 		vm.s[vm.sp-1] = vm.s[vm.sfp+vm.s[vm.sp-1]]
 		vm.pc++
 
-	case OP_STORE_LOCAL:
+	case OP_SET_LOCAL:
 		vm.s[vm.sfp+vm.s[vm.sp-1]] = vm.s[vm.sp-2]
 		vm.sp -= 2
 		vm.pc++
 
-	case OP_LOAD_GLOBAL:
+	case OP_GET_GLOBAL:
 		vm.s[vm.sp-1] = vm.g[vm.s[vm.sp-1]]
 		vm.pc++
 
-	case OP_STORE_GLOBAL:
+	case OP_SET_GLOBAL:
 		vm.g[vm.s[vm.sp-1]] = vm.s[vm.sp-2]
 		vm.sp -= 2
 		vm.pc++
 
-	case OP_LOAD_MEM:
+	case OP_GET_MEM:
 		vm.s[vm.sp-1] = vm.mem[vm.s[vm.sp-1]]
 		vm.pc++
 
-	case OP_STORE_MEM:
+	case OP_SET_MEM:
 		vm.mem[vm.s[vm.sp-1]] = vm.s[vm.sp-2]
 		vm.sp -= 2
 		vm.pc++

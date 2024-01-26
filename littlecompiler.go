@@ -28,14 +28,16 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 
 	var symTable []SymInfo
 
-	var blankLiterals []int
+	var blankLitAddr []int
 
-	var whileLoopAddr []uint32
+	var loopAddr []uint32
 
-	var GLOBAL_SCOPE int = 1
-	var currScope int = GLOBAL_SCOPE
+	var curBlocks []TokenType
 
-	var currTokIndex int
+	var GLOBAL_SCOPE int = 0
+	var curScope int = GLOBAL_SCOPE
+
+	var curTokIndex int
 
 	emitInst := func(op byte) {
 		bytecode = append(bytecode, op)
@@ -48,25 +50,25 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 
 	emitPushLitBlackInst := func() {
 		bytecode = append(bytecode, OP_PUSH_LITERAL, 0, 0, 0, 0)
-		blankLiterals = append(blankLiterals, len(bytecode)-4)
+		blankLitAddr = append(blankLitAddr, len(bytecode)-4)
 	}
 
 	fillPushLitBlackInst := func(v uint32) {
-		i := blankLiterals[len(blankLiterals)-1]
+		i := blankLitAddr[len(blankLitAddr)-1]
 		bytecode[i] = uint8(v & 0xff)
 		bytecode[i+1] = uint8((v >> 8) & 0xff)
 		bytecode[i+2] = uint8((v >> 16) & 0xff)
 		bytecode[i+3] = uint8((v >> 24) & 0xff)
-		blankLiterals = blankLiterals[:len(blankLiterals)-1]
+		blankLitAddr = blankLitAddr[:len(blankLitAddr)-1]
 	}
 
 	peek := func() TokenInfo {
-		return toks[currTokIndex]
+		return toks[curTokIndex]
 	}
 
 	advance := func() TokenInfo {
-		currTokIndex++
-		return toks[currTokIndex-1]
+		curTokIndex++
+		return toks[curTokIndex-1]
 	}
 
 	consume := func(tokType TokenType) TokenInfo {
@@ -82,9 +84,9 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 
 		for _, s := range symTable {
 			if s.symType == ST_VAR {
-				if s.symScope == GLOBAL_SCOPE && currScope == GLOBAL_SCOPE {
+				if s.symScope == GLOBAL_SCOPE && curScope == GLOBAL_SCOPE {
 					varAddr++
-				} else if s.symScope > GLOBAL_SCOPE && currScope > GLOBAL_SCOPE {
+				} else if s.symScope > GLOBAL_SCOPE && curScope > GLOBAL_SCOPE {
 					varAddr++
 				}
 			}
@@ -94,12 +96,11 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 		s.symType = ST_VAR
 		s.symIdent = varIdent
 		s.symAddr = varAddr
-		s.symScope = currScope
+		s.symScope = curScope
 		s.symArgCount = 0
 
-		var index int = len(symTable)
 		symTable = append(symTable, s)
-		return index
+		return len(symTable) - 1
 	}
 
 	addFuncToSymTable := func(funcIdent string) int {
@@ -110,16 +111,15 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 		s.symScope = GLOBAL_SCOPE
 		s.symArgCount = 0
 
-		var index int = len(symTable)
 		symTable = append(symTable, s)
-		return index
+		return len(symTable) - 1
 	}
 
-	removeSymFromSymTable := func() int {
+	delSymFromSymTable := func() int {
 		var symRemovedCount int = 0
 		var newSymTable []SymInfo
 		for _, b := range symTable {
-			if b.symScope <= currScope {
+			if b.symScope <= curScope {
 				newSymTable = append(newSymTable, b)
 			} else {
 				symRemovedCount++
@@ -130,22 +130,22 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 	}
 
 	findSym := func(symIdent string) SymInfo {
-		var currSym SymInfo
-		currSym.symType = ST_ILLEGAL
-		currSym.symScope = GLOBAL_SCOPE
+		var curSym SymInfo
+		curSym.symType = ST_ILLEGAL
+		curSym.symScope = GLOBAL_SCOPE
 		for _, s := range symTable {
 			if s.symIdent == symIdent &&
-				(s.symScope > currSym.symScope || currSym.symType == ST_ILLEGAL) {
-				currSym = s
+				(s.symScope > curSym.symScope || curSym.symType == ST_ILLEGAL) {
+				curSym = s
 			}
 		}
-		return currSym
+		return curSym
 	}
 
 	isTokBinaryOp := func(tok TokenInfo) bool {
 		tokTypes := []TokenType{
-			TT_ADD, TT_SUB, TT_MUL, TT_QUO, TT_REM, TT_AND, TT_OR, TT_XOR, TT_SHL,
-			TT_SHR, TT_LAND, TT_LOR, TT_EQL, TT_LSS, TT_GTR, TT_NEQ, TT_LEQ, TT_GEQ,
+			TT_ADD, TT_SUB, TT_MUL, TT_QUO, TT_REM, TT_AND, TT_OR, TT_XOR,
+			TT_SHL, TT_SHR, TT_EQL, TT_LSS, TT_GTR, TT_NEQ, TT_LEQ, TT_GEQ,
 		}
 		for _, t := range tokTypes {
 			if t == tok.tokType {
@@ -193,7 +193,7 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 			}
 			compileGrouping()
 			for count != 0 {
-				emitInst(OP_LOAD_MEM)
+				emitInst(OP_GET_MEM)
 				count--
 			}
 		} else {
@@ -206,7 +206,7 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 		switch peek().tokType {
 		case TT_IDENT:
 			emitPushLitInst(findSym(consume(TT_IDENT).tokStr).symAddr)
-			emitInst(OP_LOAD_LOCAL)
+			emitInst(OP_GET_LOCAL)
 		case TT_INT:
 			v, _ := strconv.ParseInt(consume(TT_INT).tokStr, 0, 64)
 			emitPushLitInst(uint32(v))
@@ -239,7 +239,7 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 			consume(TT_VAR)
 			varIdent := consume(TT_IDENT).tokStr
 
-			if currScope == GLOBAL_SCOPE {
+			if curScope == GLOBAL_SCOPE {
 				addVarToSymTable(varIdent)
 			} else {
 				emitPushLitInst(0)
@@ -248,7 +248,7 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 					consume(TT_ASSIGN)
 					compileExpr()
 					emitPushLitInst(symTable[addVarToSymTable(varIdent)].symAddr)
-					emitInst(OP_STORE_LOCAL)
+					emitInst(OP_SET_LOCAL)
 				} else {
 					addVarToSymTable(varIdent)
 				}
@@ -257,14 +257,14 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 
 		case TT_FUNC:
 			consume(TT_FUNC)
-			currScope++
-			index := addFuncToSymTable(consume(TT_IDENT).tokStr)
+			curScope++
+			curBlocks = append(curBlocks, TT_FUNC)
+			i := addFuncToSymTable(consume(TT_IDENT).tokStr)
 			consume(TT_LPAREN)
 			for peek().tokType != TT_RPAREN {
 				if peek().tokType != TT_RPAREN {
-					emitPushLitInst(0)
 					addVarToSymTable(consume(TT_IDENT).tokStr)
-					symTable[index].symArgCount++
+					symTable[i].symArgCount++
 				}
 				if peek().tokType != TT_RPAREN {
 					consume(TT_COMMA)
@@ -274,15 +274,15 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 			consume(TT_NEW_LINE)
 
 		case TT_IDENT:
-			sym := findSym(consume(TT_IDENT).tokStr)
-			if sym.symType == ST_VAR {
+			s := findSym(consume(TT_IDENT).tokStr)
+			if s.symType == ST_VAR {
 				consume(TT_ASSIGN)
 				compileExpr()
-				emitPushLitInst(sym.symAddr)
-				if sym.symScope == GLOBAL_SCOPE {
-					emitInst(OP_STORE_GLOBAL)
+				emitPushLitInst(s.symAddr)
+				if s.symScope == GLOBAL_SCOPE {
+					emitInst(OP_SET_GLOBAL)
 				} else {
-					emitInst(OP_STORE_LOCAL)
+					emitInst(OP_SET_LOCAL)
 				}
 				consume(TT_NEW_LINE)
 			} else {
@@ -292,32 +292,33 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 			}
 
 		case TT_MUL:
-			var count int = 0
+			var c int = 0
 			for peek().tokType == TT_MUL {
 				consume(TT_MUL)
-				count++
+				c++
 			}
 			consume(TT_LPAREN)
-			sym := findSym(consume(TT_IDENT).tokStr)
+			s := findSym(consume(TT_IDENT).tokStr)
 			consume(TT_RPAREN)
 			consume(TT_ASSIGN)
 			compileExpr()
-			emitPushLitInst(sym.symAddr)
-			if sym.symScope == GLOBAL_SCOPE {
-				emitInst(OP_LOAD_GLOBAL)
+			emitPushLitInst(s.symAddr)
+			if s.symScope == GLOBAL_SCOPE {
+				emitInst(OP_GET_GLOBAL)
 			} else {
-				emitInst(OP_LOAD_LOCAL)
+				emitInst(OP_GET_LOCAL)
 			}
-			count--
-			for count != 0 {
-				emitInst(OP_LOAD_MEM)
-				count--
+			c--
+			for c != 0 {
+				emitInst(OP_GET_MEM)
+				c--
 			}
-			emitInst(OP_STORE_MEM)
+			emitInst(OP_SET_MEM)
 
 		case TT_IF:
 			consume(TT_IF)
-			currScope++
+			curScope++
+			curBlocks = append(curBlocks, TT_IF)
 			emitPushLitBlackInst()
 			compileExpr()
 			emitInst(OP_BRANCH)
@@ -325,8 +326,9 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 
 		case TT_WHILE:
 			consume(TT_WHILE)
-			currScope++
-			whileLoopAddr = append(whileLoopAddr, uint32(len(bytecode)))
+			curScope++
+			curBlocks = append(curBlocks, TT_WHILE)
+			loopAddr = append(loopAddr, uint32(len(bytecode)))
 			emitPushLitBlackInst()
 			compileExpr()
 			emitInst(OP_BRANCH)
@@ -340,16 +342,16 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 
 		case TT_END:
 			consume(TT_END)
-			currScope--
-			count := removeSymFromSymTable()
-			for count != 0 {
+			curScope--
+			c := delSymFromSymTable()
+			for c != 0 {
 				emitInst(OP_POP_LITERAL)
-				count--
+				c--
 			}
 
-			switch peek().tokType {
+			switch curBlocks[len(curBlocks)-1] {
 			case TT_FUNC:
-				if currScope != GLOBAL_SCOPE {
+				if curScope != GLOBAL_SCOPE {
 					fmt.Println("Error while compiling")
 					os.Exit(1)
 				}
@@ -360,16 +362,17 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 				fillPushLitBlackInst(uint32(len(bytecode)))
 
 			case TT_WHILE:
-				emitPushLitInst(whileLoopAddr[len(whileLoopAddr)-1])
+				emitPushLitInst(loopAddr[len(loopAddr)-1])
+				loopAddr = loopAddr[:len(loopAddr)-1]
 				emitInst(OP_JUMP)
-				whileLoopAddr = whileLoopAddr[:len(whileLoopAddr)-1]
 				fillPushLitBlackInst(uint32(len(bytecode)))
 
 			default:
 				fmt.Println("Error while compiling")
 				os.Exit(1)
 			}
-			advance()
+
+			curBlocks = curBlocks[:len(curBlocks)-1]
 			consume(TT_NEW_LINE)
 
 		case TT_NEW_LINE:
