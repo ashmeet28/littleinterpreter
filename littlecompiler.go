@@ -205,8 +205,28 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 	compileUnary = func(isRightOfBinary bool) {
 		switch peek().tokType {
 		case TT_IDENT:
-			emitPushLitInst(findSym(consume(TT_IDENT).tokStr).symAddr)
-			emitInst(OP_GET_LOCAL)
+			s := findSym(consume(TT_IDENT).tokStr)
+			if s.symType == ST_FUNC {
+				consume(TT_LPAREN)
+				for peek().tokType != TT_RPAREN {
+					compileExpr()
+					if peek().tokType != TT_RPAREN {
+						consume(TT_COMMA)
+					}
+				}
+				consume(TT_RPAREN)
+				emitPushLitInst(uint32(s.symArgCount))
+				emitPushLitInst(s.symAddr)
+				emitInst(OP_CALL)
+			} else {
+				emitPushLitInst(s.symAddr)
+				if s.symScope == GLOBAL_SCOPE {
+					emitInst(OP_GET_GLOBAL)
+				} else {
+					emitInst(OP_GET_LOCAL)
+				}
+			}
+
 		case TT_INT:
 			v, _ := strconv.ParseInt(consume(TT_INT).tokStr, 0, 64)
 			emitPushLitInst(uint32(v))
@@ -262,10 +282,8 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 			i := addFuncToSymTable(consume(TT_IDENT).tokStr)
 			consume(TT_LPAREN)
 			for peek().tokType != TT_RPAREN {
-				if peek().tokType != TT_RPAREN {
-					addVarToSymTable(consume(TT_IDENT).tokStr)
-					symTable[i].symArgCount++
-				}
+				addVarToSymTable(consume(TT_IDENT).tokStr)
+				symTable[i].symArgCount++
 				if peek().tokType != TT_RPAREN {
 					consume(TT_COMMA)
 				}
