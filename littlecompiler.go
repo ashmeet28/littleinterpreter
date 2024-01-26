@@ -186,15 +186,15 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 	compileGrouping = func() {
 		consume(TT_LPAREN)
 		if peek().tokType == TT_MUL {
-			var count int = 0
+			var c int = 0
 			for peek().tokType == TT_MUL {
 				consume(TT_MUL)
-				count++
+				c++
 			}
 			compileGrouping()
-			for count != 0 {
+			for c != 0 {
 				emitInst(OP_GET_MEM)
-				count--
+				c--
 			}
 		} else if peek().tokType == TT_ADD {
 			consume(TT_ADD)
@@ -327,19 +327,40 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 			s := findSym(consume(TT_IDENT).tokStr)
 			consume(TT_RPAREN)
 			consume(TT_ASSIGN)
-			compileExpr()
-			emitPushLitInst(s.symAddr)
-			if s.symScope == GLOBAL_SCOPE {
-				emitInst(OP_GET_GLOBAL)
-			} else {
-				emitInst(OP_GET_LOCAL)
-			}
-			c--
-			for c != 0 {
-				emitInst(OP_GET_MEM)
+			if peek().tokType == TT_STR {
+				emitPushLitInst(0)
+				b := []byte(consume(TT_STR).tokStr)
+				for len(b) > 0 {
+					emitPushLitInst(uint32(b[len(b)-1]))
+					b = b[:len(b)-1]
+				}
+				emitPushLitInst(s.symAddr)
+				if s.symScope == GLOBAL_SCOPE {
+					emitInst(OP_GET_GLOBAL)
+				} else {
+					emitInst(OP_GET_LOCAL)
+				}
 				c--
+				for c != 0 {
+					emitInst(OP_GET_MEM)
+					c--
+				}
+				emitInst(OP_SET_MEM_STR)
+			} else {
+				compileExpr()
+				emitPushLitInst(s.symAddr)
+				if s.symScope == GLOBAL_SCOPE {
+					emitInst(OP_GET_GLOBAL)
+				} else {
+					emitInst(OP_GET_LOCAL)
+				}
+				c--
+				for c != 0 {
+					emitInst(OP_GET_MEM)
+					c--
+				}
+				emitInst(OP_SET_MEM)
 			}
-			emitInst(OP_SET_MEM)
 
 		case TT_IF:
 			consume(TT_IF)
