@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"os"
 	"strconv"
 )
 
@@ -73,8 +71,7 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 
 	consume := func(tokType TokenType) TokenInfo {
 		if peek().tokType != tokType {
-			fmt.Println("Error while compiling")
-			os.Exit(1)
+			panic("Error while compiling")
 		}
 		return advance()
 	}
@@ -405,8 +402,7 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 			switch curBlocks[len(curBlocks)-1] {
 			case TT_FUNC:
 				if curScope != GLOBAL_SCOPE {
-					fmt.Println("Error while compiling")
-					os.Exit(1)
+					panic("Error while compiling")
 				}
 				emitPushLitInst(0)
 				emitInst(OP_RETURN)
@@ -421,8 +417,7 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 				fillPushLitBlackInst(uint32(len(bytecode)))
 
 			default:
-				fmt.Println("Error while compiling")
-				os.Exit(1)
+				panic("Error while compiling")
 			}
 
 			curBlocks = curBlocks[:len(curBlocks)-1]
@@ -431,8 +426,7 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 		case TT_NEW_LINE:
 			consume(TT_NEW_LINE)
 		default:
-			fmt.Println("Error while compiling")
-			os.Exit(1)
+			panic("Error while compiling")
 		}
 	}
 

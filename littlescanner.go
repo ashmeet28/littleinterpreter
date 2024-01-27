@@ -1,10 +1,5 @@
 package main
 
-import (
-	"fmt"
-	"os"
-)
-
 type TokenType int
 
 const (
@@ -208,8 +203,7 @@ func GenerateTokens(src []byte) []TokenInfo {
 		newTok, bytesConsumed := GenerateToken(src)
 
 		if newTok.tokType == TT_ILLEGAL {
-			fmt.Println("Error while tokenizing")
-			os.Exit(1)
+			panic("Error while tokenizing")
 		}
 
 		if newTok.tokType != TT_SPACE {
