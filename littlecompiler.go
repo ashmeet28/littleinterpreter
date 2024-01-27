@@ -132,7 +132,7 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 		curSym.symScope = GLOBAL_SCOPE
 		for _, s := range symTable {
 			if s.symIdent == symIdent &&
-				(s.symScope > curSym.symScope || curSym.symType == ST_ILLEGAL) {
+				(curSym.symScope < s.symScope || curSym.symType == ST_ILLEGAL) {
 				curSym = s
 			}
 		}
