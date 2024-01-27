@@ -261,6 +261,11 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 	emitInst(OP_CALL)
 	emitInst(OP_ECALL)
 
+	addFuncToSymTable("ecall")
+	emitInst(OP_ECALL)
+	emitPushLitInst(0)
+	emitInst(OP_RETURN)
+
 	for peek().tokType != TT_EOF {
 		switch peek().tokType {
 		case TT_VAR:
@@ -300,8 +305,9 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 			consume(TT_NEW_LINE)
 
 		case TT_IDENT:
-			s := findSym(consume(TT_IDENT).tokStr)
+			s := findSym(peek().tokStr)
 			if s.symType == ST_VAR {
+				consume(TT_IDENT)
 				consume(TT_ASSIGN)
 				compileExpr()
 				emitPushLitInst(s.symAddr)
