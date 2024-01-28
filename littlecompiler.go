@@ -256,7 +256,7 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 	emitPushLitInst(0)
 	emitPushLitBlackInst()
 	emitInst(OP_CALL)
-	emitInst(OP_ECALL)
+	emitInst(OP_EXIT)
 
 	addFuncToSymTable("ecall")
 	emitInst(OP_ECALL)

@@ -1,27 +1,44 @@
+var SIZE_4K
+var SIZE_16M
+
 var alloc_next
 
 func alloc(n)
-    if alloc_next == 0
-        alloc_next = 1024
-    end
-
     var p = alloc_next
     alloc_next = alloc_next + n
     return p
 end
 
-func receive(buf)
+func receive(buf, n)
     var p = 4
+    *(p) = 8
+    p = 5
     *(p) = buf
+    p = 6
+    *(p) = n
     ecall()
 end
 
-func send(buf)
+func send(buf, n)
     var p = 4
+    *(p) = 9
+    p = 5
     *(p) = buf
+    p = 6
+    *(p) = n
     ecall()
 end
 
+func str_len(s)
+    var l
+    while (*(s + l)) != 0
+        l = l + 1
+    end
+    return l
+end
+
+var source_code
+var bytecode
 
 var TT_ILLEGAL
 var TT_EOF
@@ -107,12 +124,64 @@ func init_token_types()
     TT_VAR = 35
 end
 
-func main()
-    var srccode = alloc(16777216)
-    var bytecode = alloc(16777216)
-    receive(srccode)
+var temp_ret_buf
+
+func gen_tok(src, cur_pos)
+    src = src + cur_pos
+
+    *(temp_ret_buf) = TT_ILLEGAL
+    temp_ret_buf = temp_ret_buf + 1
+    *(temp_ret_buf) = src
+    temp_ret_buf = temp_ret_buf + 1
+    *(temp_ret_buf) = 0
+    temp_ret_buf = temp_ret_buf - 2
+
+    if str_len(src) == 0
+        *(temp_ret_buf) = TT_EOF
+        temp_ret_buf = temp_ret_buf + 2
+        *(temp_ret_buf) = 0
+        temp_ret_buf = temp_ret_buf - 2
+        return temp_ret_buf
+    end
+
+    if (*(src)) == 0x20
+        *(temp_ret_buf) = TT_SPACE
+        temp_ret_buf = temp_ret_buf + 2
+        *(temp_ret_buf) = 1
+        temp_ret_buf = temp_ret_buf - 2
+        return temp_ret_buf
+    end
+
+    if (*(src)) == 0x0a
+        *(temp_ret_buf) = TT_NEW_LINE
+        temp_ret_buf = temp_ret_buf + 2
+        *(temp_ret_buf) = 1
+        temp_ret_buf = temp_ret_buf - 2
+        return temp_ret_buf
+    end
+end
+
+func init()
+    alloc_next = 1024
+
+    SIZE_4K = 4096
+    SIZE_16M = 16777216
+
+    source_code = alloc(SIZE_16M)
+    bytecode = alloc(SIZE_16M)
+
+    temp_ret_buf = alloc(SIZE_4K)
 
     init_token_types()
+end
 
-    send(bytecode)
+var a
+
+func main()
+    init()
+    receive(source_code, SIZE_16M)
+
+    gen_tok(source_code, 0)
+    a = (*(temp_ret_buf))
+    send(bytecode, SIZE_16M)
 end

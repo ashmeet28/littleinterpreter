@@ -13,6 +13,6 @@ func main() {
 	}
 
 	data = append(data, 0x0a)
-	VMIsDebuggerOn = false
+	VMIsDebuggerOn = true
 	VMRun(VMCreate(GenerateBytecode(GenerateTokens(data))))
 }

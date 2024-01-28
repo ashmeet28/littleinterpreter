@@ -7,13 +7,15 @@ const (
 
 	VM_STATUS_READY
 	VM_STATUS_RUNNING
-	VM_STATUS_HALT
+	VM_STATUS_ECALL
+	VM_STATUS_EXIT
 	VM_STATUS_ERROR
 )
 
 var (
 	OP_NOP   byte = 1
 	OP_ECALL byte = 2
+	OP_EXIT  byte = 3
 
 	OP_ADD byte = 8  // +
 	OP_SUB byte = 9  // -
@@ -78,9 +80,13 @@ func VMExecInst(vm VMState) VMState {
 	case OP_NOP:
 		vm.pc++
 
+	case OP_EXIT:
+		vm.pc++
+		vm.status = VM_STATUS_EXIT
+
 	case OP_ECALL:
 		vm.pc++
-		vm.status = VM_STATUS_HALT
+		vm.status = VM_STATUS_ECALL
 
 	case OP_ADD:
 		vm.s[vm.sp-2] = vm.s[vm.sp-2] + vm.s[vm.sp-1]
@@ -289,7 +295,7 @@ func VMExecInst(vm VMState) VMState {
 
 		fmt.Println("pc", vm.pc)
 
-		fmt.Println("g", vm.g[:32])
+		fmt.Println("g", vm.g[:64])
 
 		fmt.Println("s", vm.s[:32])
 		fmt.Println("sp", vm.sp)
@@ -301,10 +307,7 @@ func VMExecInst(vm VMState) VMState {
 
 		fmt.Println("mem", vm.mem[:32])
 
-		fmt.Println("-")
-		fmt.Println("-")
-		fmt.Println("-")
-		fmt.Println("-")
+		fmt.Println("------")
 	}
 
 	return vm
@@ -320,6 +323,8 @@ func VMRun(vm VMState) {
 
 		if vm.status == VM_STATUS_ERROR {
 			fmt.Println("VM STATUS: ERROR")
+		} else if vm.status == VM_STATUS_ECALL {
+			vm = VMHandleECALL(vm)
 		}
 	}
 
@@ -343,7 +348,7 @@ func VMCreate(bytecode []byte) VMState {
 	vm.rs = make([]uint32, 16777216)
 	vm.rv = 0
 
-	vm.mem = make([]uint32, 16777216)
+	vm.mem = make([]uint32, 268435456)
 
 	vm.status = VM_STATUS_READY
 
