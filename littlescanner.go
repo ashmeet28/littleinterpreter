@@ -57,6 +57,37 @@ func GenerateToken(src []byte) (TokenInfo, int) {
 
 	var newTok TokenInfo
 
+	if len(src) == 0 {
+
+		newTok.tokType = TT_EOF
+		bytesConsumed = 0
+		return newTok, bytesConsumed
+
+	} else if src[0] == 0x20 {
+
+		newTok.tokType = TT_SPACE
+		bytesConsumed = 1
+		return newTok, bytesConsumed
+
+	} else if src[0] == 0x0a {
+
+		newTok.tokType = TT_NEW_LINE
+		bytesConsumed = 1
+		return newTok, bytesConsumed
+
+	} else if len(src) > 2 && src[0] == 0x2f && src[1] == 0x2f {
+
+		newTok.tokType = TT_NEW_LINE
+		bytesConsumed = 0
+		for _, b := range src {
+			bytesConsumed++
+			if b == 0x0a {
+				return newTok, bytesConsumed
+			}
+		}
+
+	}
+
 	var srcLine string
 
 	for i, c := range src {
@@ -111,5 +142,79 @@ func GenerateToken(src []byte) (TokenInfo, int) {
 		}
 	}
 
+	if newTok.tokType != TT_ILLEGAL {
+		return newTok, bytesConsumed
+	}
+
+	isDigit := func(c byte) bool {
+		return c >= 0x30 && c <= 0x39
+	}
+
+	isAplabet := func(c byte) bool {
+		return (c >= 0x41 && c <= 0x5a) || (c >= 0x61 && c <= 0x7a) || (c == 0x5f)
+	}
+
+	var i int = 0
+
+	if isAplabet(srcLine[i]) {
+
+		newTok.tokType = TT_IDENT
+		for (i < len(srcLine)) && (isAplabet(srcLine[i]) || isDigit(srcLine[i])) {
+			i++
+		}
+		newTok.tokStr = srcLine[:i]
+		bytesConsumed = len(newTok.tokStr)
+
+	} else if isDigit(srcLine[i]) {
+
+		newTok.tokType = TT_INT
+		for (i < len(srcLine)) && (isAplabet(srcLine[i]) || isDigit(srcLine[i])) {
+			i++
+		}
+		newTok.tokStr = srcLine[:i]
+		bytesConsumed = len(newTok.tokStr)
+
+	} else if srcLine[i] == 0x22 {
+
+		i++
+		for i < len(srcLine) {
+			if srcLine[i] == 0x22 {
+				newTok.tokType = TT_STR
+				newTok.tokStr = srcLine[1:i]
+				bytesConsumed = len(newTok.tokStr) + 2
+				break
+			} else {
+				i++
+			}
+		}
+
+	}
+
 	return newTok, bytesConsumed
+}
+
+func GenerateTokens(src []byte) []TokenInfo {
+	var toks []TokenInfo
+
+	var isDone bool = false
+
+	for !isDone {
+		newTok, bytesConsumed := GenerateToken(src)
+
+		if newTok.tokType == TT_ILLEGAL {
+			panic("Error while tokenizing")
+		}
+
+		if newTok.tokType != TT_SPACE {
+			toks = append(toks, newTok)
+		}
+
+		if newTok.tokType == TT_EOF {
+			isDone = true
+		} else {
+			src = src[bytesConsumed:]
+		}
+	}
+
+	return toks
 }

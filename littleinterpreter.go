@@ -15,5 +15,5 @@ func main() {
 
 	data = append(data, 0x0a)
 
-	fmt.Println(GenerateToken(data))
+	fmt.Println(GenerateTokens(data))
 }
