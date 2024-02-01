@@ -3,7 +3,6 @@
 ## Examples
 
 ```
-
 func fib(n)
     if n <= 1
         return n
@@ -18,5 +17,4 @@ func main()
     result = fib(n)
     return result
 end
-
 ```
