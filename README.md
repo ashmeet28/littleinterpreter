@@ -12,9 +12,6 @@ func fib(n)
 end
 
 func main()
-    var n = 9
-    var result
-    result = fib(n)
-    return result
+    return fib(9)
 end
 ```
