@@ -1,6 +1,8 @@
 package main
 
-import "strconv"
+import (
+	"strconv"
+)
 
 type SymType int
 
@@ -250,6 +252,7 @@ func GenerateBytecode(toks []TokenInfo) []byte {
 			compileBinary()
 		}
 	}
+
 	emitPushLitInst(0)
 	emitPushLitBlackInst()
 	emitInst(OP_CALL)

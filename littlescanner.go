@@ -56,6 +56,7 @@ func GenerateToken(src []byte) (TokenInfo, int) {
 	var bytesConsumed int = 0
 
 	var newTok TokenInfo
+	newTok.tokType = TT_ILLEGAL
 
 	if len(src) == 0 {
 

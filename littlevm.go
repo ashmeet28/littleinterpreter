@@ -295,7 +295,7 @@ func VMExecInst(vm VMState) VMState {
 
 		fmt.Println("pc", vm.pc)
 
-		fmt.Println("g", vm.g[:32])
+		fmt.Println("g", vm.g[:64])
 
 		fmt.Println("s", vm.s[:32])
 		fmt.Println("sp", vm.sp)
@@ -324,7 +324,7 @@ func VMRun(vm VMState) {
 		if vm.status == VM_STATUS_ERROR {
 			fmt.Println("VM STATUS: ERROR")
 		} else if vm.status == VM_STATUS_ECALL {
-			vm.status = VM_STATUS_RUNNING
+			vm = VMHandleECALL(vm)
 		}
 	}
 
