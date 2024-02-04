@@ -1,6 +1,6 @@
 # Little Interpreter
 
-## Examples
+## Example
 
 ```
 func fib(n)
