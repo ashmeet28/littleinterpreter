@@ -1,0 +1,16 @@
+mod string {
+    fn create() -> *u8 {
+        let p: *u8
+        p = alloc(i32(1))
+        *p = 0
+        return p
+    }
+}
+
+mod main {
+    fn main(args: **u8) -> u8 {
+        let a: u8
+        let p: *u8
+        p = alloc(i32(10000))
+    }
+}
