@@ -16,10 +16,11 @@ mod string {
 }
 
 mod hello_world {
-    fn get_string() {
+    fn get_string() *u8 {
         let p *u8
         p = alloc(u32(4096))
         *p = "ABC"
+        return p
     }
 }
 
@@ -28,5 +29,7 @@ mod main {
         let a u8
         let p *u8
         p = alloc(u32(10000))
+        free(p)
+        p = string:create()
     }
 }
