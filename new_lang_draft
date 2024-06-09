@@ -1,16 +1,32 @@
 mod string {
-    fn create() -> *u8 {
-        let p: *u8
-        p = alloc(i32(1))
+    fn create() *u8 {
+        let p *u8
+        p = alloc(u32(1))
         *p = 0
         return p
+    }
+
+    fn length(s *u8) u32 {
+        let i u32
+        while (*(s + i)) != u8(0) {
+            i = i + 1
+        }
+        return i
+    }
+}
+
+mod hello_world {
+    fn get_string() {
+        let p *u8
+        p = alloc(u32(4096))
+        *p = "ABC"
     }
 }
 
 mod main {
-    fn main(args: **u8) -> u8 {
-        let a: u8
-        let p: *u8
-        p = alloc(i32(10000))
+    fn main(args **u8) u8 {
+        let a u8
+        let p *u8
+        p = alloc(u32(10000))
     }
 }
