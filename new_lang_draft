@@ -1,28 +1,24 @@
 mod language_examples {
-    fn allocating_memory() *u8 {
-        let p *u8
-        p = alloc(u32(1))
-        *p = 0
-        return p
+    fn all_data_types() {
+        let a u8
+        let b u16
+        let c u32
+
+        let x i8
+        let y i16
+        let z i32
     }
 
-    fn while_loop(s *u8) u32 {
-        let i u32
-        while (*(s + i)) != u8(0) {
-            i = i + u32(1)
-        }
-        return i
-    }
-
-    fn pointer_conversions() {
-        let p **u8
-        p = (**u8)(u32(0x3000_0000))
-        let a u32
-        a = u32((*(p)))
+    fn storing_on_heap() {
+        let a u8
+        a = 10
+        store_u8(u32(0x3000_0000), a)
+        let b u8
+        b = load_u8(u32(0x3000_0000))
     }
 }
 
 mod main {
-    fn main(args **u8) u8 {
+    fn main() {
     }
 }
