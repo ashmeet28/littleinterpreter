@@ -25,7 +25,7 @@ func lang_spec() {
 
     x = i8(-128) % i8(-1) // 0
 
-    // The >> and << operands require left operand to be of type u8 or u32.
+    // The >> and << operands require right operand to be of type u8 or u32.
 
     a = u8(4) >> u32(1) // 2
     x = i8(-4) >> u32(1) // -2
