@@ -1,4 +1,4 @@
-fn lang_spec() {
+lang_spec() {
     let a u8
     let b u32
 
@@ -37,6 +37,6 @@ fn lang_spec() {
     y = i32(-4) << u32(3) // -32
 }
 
-fn main() {
+main() {
     lang_spec()
 }
