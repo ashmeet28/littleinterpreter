@@ -1,35 +1,28 @@
-mod string {
-    fn create() *u8 {
+mod language_examples {
+    fn allocating_memory() *u8 {
         let p *u8
         p = alloc(u32(1))
         *p = 0
         return p
     }
 
-    fn length(s *u8) u32 {
+    fn while_loop(s *u8) u32 {
         let i u32
         while (*(s + i)) != u8(0) {
-            i = i + 1
+            i = i + u32(1)
         }
         return i
     }
-}
 
-mod hello_world {
-    fn get_string() *u8 {
-        let p *u8
-        p = alloc(u32(4096))
-        *p = "ABC"
-        return p
+    fn pointer_conversions() {
+        let p **u8
+        p = (**u8)(u32(0x3000_0000))
+        let a u32
+        a = u32((*(p)))
     }
 }
 
 mod main {
     fn main(args **u8) u8 {
-        let a u8
-        let p *u8
-        p = alloc(u32(10000))
-        free(p)
-        p = string:create()
     }
 }
