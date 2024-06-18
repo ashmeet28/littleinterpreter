@@ -1,43 +1,42 @@
-fn all_data_types() {
+fn lang_spec() {
     let a u8
-    let b u16
-    let c u32
+    let b u32
 
     let x i8
-    let y i16
-    let z i32
-}
+    let y i32
 
-fn storing_on_heap() {
-    let a u8
-    a = 10
-    store_u8(u32(0x3000_0000), a)
-    let b u8
-    b = load_u8(u32(0x3000_0000))
-}
+    // The +, -, *, /, and % operators require two operands of the same type.
 
-fn if_and_while_statements() {
-    let a u8
-    a = 2
+    a = u8(255) + u8(1) // 0
+    a = u8(255) + u8(2) // 1
 
-    let b u32
-    b = 4
+    a = u8(1) - u8(3) // 254
 
-    if u32(a) + b == u32(6) {
-        let b u8
-        b = 10
-        a = b
-    }
+    a = u8(13) * u8(23) // 43
+    x = i8(-13) * i8(23) // -43
 
-    while a > u8(0) {
-        a = a - u8(2)
-        if a == u8(2) {
-            break
-        } else {
-            continue
-        }
-    }
+    a = u8(15) / u8(9) // 1
+
+    a = u8(15) / u8(0) // PANIC
+
+    x = i8(-128) / i8(-1) // -128
+
+    a = u8(15) % u8(0) // PANIC
+
+    x = i8(-128) % i8(-1) // 0
+
+    a = u8(4) >> u32(1) // 2
+    x = i8(-4) >> u32(1) // -2
+
+    // The >> and << operands require left operand to be of type u8 or u32.
+
+    b = u32(4) >> u8(5) // 0
+    y = i32(-4) >> u8(5) // -1
+
+    b = u32(4) << u8(3) // 32
+    y = i32(-4) << u32(3) // -32
 }
 
 fn main() {
+    lang_spec()
 }
