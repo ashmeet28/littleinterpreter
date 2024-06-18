@@ -16,6 +16,30 @@ mod language_examples {
         let b u8
         b = load_u8(u32(0x3000_0000))
     }
+
+    fn if_and_while_statements() {
+        let a u8
+        a = 2
+
+        let b u32
+        b = 4
+
+        if u32(a) + b == u32(6) {
+            let b u8
+            b = 10
+            a = b
+        }
+
+        while a > u8(0) {
+            a = a - u8(2)
+            if a == u8(2) {
+                break
+            } else {
+                continue
+            }
+        }
+
+    }
 }
 
 mod main {
