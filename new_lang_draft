@@ -35,6 +35,20 @@ func lang_spec() {
 
     b = u32(4) << u8(3) // 32
     y = i32(-4) << u32(3) // -32
+
+    // If the value is a signed integer, it is sign extended to implicit
+    // infinite precision; otherwise it is zero extended. It is then truncated
+    // to fit in the result type's size.
+
+    b = u32(0x10F0)
+    a = i8(b)
+    b = u32(a) // 0xFFFFFFF0
+
+    // The ==, !=, <, <=, >, and >= operators require two operands of the same
+    // type and yield result of u8 type.
+
+    // The && (logical AND) and || (logical OR) require two operands of u8 type
+    // and yield result of u8 type.
 }
 
 func main() {
