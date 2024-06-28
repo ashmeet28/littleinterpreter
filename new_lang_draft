@@ -49,6 +49,23 @@ func lang_spec() {
 
     // The && (logical AND) and || (logical OR) require two operands of u8 type
     // and yield result of u8 type.
+
+    // Built-in functions
+    // su8(addr u32, val u8)
+    // su32(addr u32, val u32)
+    // si8(addr u32, val i8)
+    // si32(addr u32, val i32)
+    // lu8(addr u32) u8
+    // lu32(addr u32) u32
+    // li8(addr u32) i8
+    // li32(addr u32) i32
+    // ecall()
+
+    // Memory map
+    // 0x0001_0000 - 0x0001_ffff Ecall parameters
+    // 0x1000_0000 - 0x1fff_ffff Instructions
+    // 0x2000_0000 - 0x2fff_ffff Stack
+    // 0x3000_0000 - 0x3fff_ffff Free memory for the program
 }
 
 func main() {
