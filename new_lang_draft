@@ -25,7 +25,7 @@ func lang_spec() {
 
     x = i8(-128) % i8(-1) // 0
 
-    // The >> and << operands require right the operand to be of type u8 or u32.
+    // The >> and << operands require the right operand to be of type u8 or u32.
 
     a = u8(4) >> u32(1) // 2
     x = i8(-4) >> u32(1) // -2
@@ -68,12 +68,16 @@ func lang_spec() {
     // 0x3000_0000 - 0x3fff_ffff Free memory for the program
 
     // String literals
-    // Only ASCII printable characters are allowed in a string literal.
+    // Only ASCII printable characters (0x20 to 0x7E) are allowed in a string
+    // literal.
     // Escape sequences
     // \"
     // \\
     // \000
     // \x00
+
+    // The <- operator stores string automatically terminated with a null
+    // character ('\000')
 
     b <- "ABC\000\123\xff\"\\"
 }
