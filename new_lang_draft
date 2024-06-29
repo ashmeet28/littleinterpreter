@@ -25,7 +25,7 @@ func lang_spec() {
 
     x = i8(-128) % i8(-1) // 0
 
-    // The >> and << operands require right operand to be of type u8 or u32.
+    // The >> and << operands require right the operand to be of type u8 or u32.
 
     a = u8(4) >> u32(1) // 2
     x = i8(-4) >> u32(1) // -2
@@ -45,10 +45,10 @@ func lang_spec() {
     b = u32(a) // 0xFFFFFFF0
 
     // The ==, !=, <, <=, >, and >= operators require two operands of the same
-    // type and yield result of u8 type.
+    // type and yield a result of u8 type.
 
     // The && (logical AND) and || (logical OR) require two operands of u8 type
-    // and yield result of u8 type.
+    // and yield a result of u8 type.
 
     // Built-in functions
     // su8(addr u32, val u8)
@@ -66,6 +66,16 @@ func lang_spec() {
     // 0x1000_0000 - 0x1fff_ffff Instructions
     // 0x2000_0000 - 0x2fff_ffff Stack
     // 0x3000_0000 - 0x3fff_ffff Free memory for the program
+
+    // String literals
+    // Only ASCII printable characters are allowed in a string literal.
+    // Escape sequences
+    // \"
+    // \\
+    // \000
+    // \x00
+
+    b <- "ABC\000\123\xff\"\\"
 }
 
 func main() {
