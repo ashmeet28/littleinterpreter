@@ -1,0 +1,40 @@
+func lang_spec()
+    let v_u8 u8
+    let v_u16 u16
+    let v_u32 u32
+    let v_u64 u64
+
+    let v_i8 i8
+    let v_i16 i16
+    let v_i32 i32
+    let v_i64 i64
+
+    if u8(1)
+        let a u8
+
+        a = u8(255) + u8(1) // 0
+        a = u8(255) + u8(2) // 1
+
+        a = u8(1) - u8(3) // 254
+
+        a = u8(83) * u8(89) // 219
+    end
+
+    if u8(1)
+        let a i8
+
+        a = i8(5) / u8(3) // 1
+        a = i8(-5) / u8(3) // -1
+        a = i8(5) / u8(-3) // -1
+        a = i8(-5) / u8(-3) // 1
+
+        a = i8(5) % u8(3) // 2
+        a = i8(-5) % u8(3) // -2
+        a = i8(5) % u8(-3) // 2
+        a = i8(-5) % u8(-3) // -2
+    end
+end
+
+func main()
+    lang_spec()
+end
