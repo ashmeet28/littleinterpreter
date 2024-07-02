@@ -1,4 +1,4 @@
-func lang_spec() u8 {
+func lang_spec()
     let a u8
     let b u16
     let c u32
@@ -9,7 +9,7 @@ func lang_spec() u8 {
     let g i32
     let h i64
 
-    if u8(1) {
+    do
         let a u8
 
         a = u8(255) + u8(1) # 0
@@ -18,9 +18,9 @@ func lang_spec() u8 {
         a = u8(1) - u8(3) # 254
 
         a = u8(83) * u8(89) # 219
-    }
+    end
 
-    if u8(1) {
+    do
         let a i8
 
         a = i8(5) / i8(3) # 1
@@ -35,9 +35,9 @@ func lang_spec() u8 {
 
         a = i8(-128) / i8(-1) # -128
         a = i8(-128) % i8(-1) # 0
-    }
+    end
 
-    if u8(1) {
+    do
         let a u8
         let b i8
 
@@ -53,51 +53,46 @@ func lang_spec() u8 {
         a = u8(64) << i8(1) # 128
         a = u8(64) << i8(2) # 0
         b = i8(64) << i8(2) # 0
-    }
+    end
 
-    if u8(1) {
+    do
         let a i32
         let b i32
 
         a = 1
         b = 2
 
-        if a == b {
-        }
+        if a == b then
+        end
+
+        if a != b then
+        end
+
+        if a < b then
+        end
+
+        if a <= b then
+        end
+
+        if a > b then
+        end
+
+        if a >= b then
+        end
+    end
 
 
-        if a != b {
-        }
-
-
-        if a < b {
-        }
-
-
-        if a <= b {
-        }
-
-
-        if a > b {
-        }
-
-
-        if a >= b {
-        }
-    }
-
-
-    if u8(1) {
+    do
         let a i32
         a = 10
-        while a > 0 {
+        while a > 0 do
             a = a - i32(1)
-        }
-    }
-}
+        end
+    end
+end
 
 
 
-func main() {
+func main()
     lang_spec()
-}
+end
