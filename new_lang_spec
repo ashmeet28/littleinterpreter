@@ -1,4 +1,4 @@
-func lang_spec():
+func lang_spec() u8:
     let a u8
     let b u16
     let c u32
@@ -98,9 +98,46 @@ func lang_spec():
             a = a - i32(1)
         end
     end
+
+    if u8(1):
+        let addr u64
+        addr <- "ABC\x00\"\n\\"
+    end
+
+    if u8(1):
+        let addr u64
+
+        su8(addr, u8(1))
+        su16(addr, u16(1))
+        su32(addr, u32(1))
+        su64(addr, u64(1))
+
+        si8(addr, i8(1))
+        si16(addr, i16(1))
+        si32(addr, i32(1))
+        si64(addr, i64(1))
+
+        a = lu8(addr)
+        b = lu16(addr)
+        c = lu32(addr)
+        d = lu64(addr)
+
+        e = li8(addr)
+        f = li16(addr)
+        g = li32(addr)
+        h = li64(addr)
+    end
+
+    if u8(1):
+        let a u8
+
+        a = u8('A')
+        a = u8('\x00')
+        a = u8('\'')
+        a = u8('\n')
+        a = u8('\\')
+    end
 end
-
-
 
 func main():
     lang_spec()
