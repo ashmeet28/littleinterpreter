@@ -1,4 +1,4 @@
-func lang_spec()
+func lang_spec():
     let a u8
     let b u16
     let c u32
@@ -9,7 +9,7 @@ func lang_spec()
     let g i32
     let h i64
 
-    do
+    if u8(1):
         let a u8
 
         a = u8(255) + u8(1) # 0
@@ -20,7 +20,7 @@ func lang_spec()
         a = u8(83) * u8(89) # 219
     end
 
-    do
+    if u8(1):
         let a i8
 
         a = i8(5) / i8(3) # 1
@@ -35,9 +35,12 @@ func lang_spec()
 
         a = i8(-128) / i8(-1) # -128
         a = i8(-128) % i8(-1) # 0
+
+        a = i8(1) / i8(0) # PANIC
+        a = i8(1) % i8(0) # PANIC
     end
 
-    do
+    if u8(1):
         let a u8
         let b i8
 
@@ -49,43 +52,49 @@ func lang_spec()
 
         a = u8(128) >> i8(1) # 64
         a = u8(128) >> i8(-1) # PANIC
+        a = u8(128) << i8(-1) # PANIC
 
         a = u8(64) << i8(1) # 128
         a = u8(64) << i8(2) # 0
         b = i8(64) << i8(2) # 0
     end
 
-    do
+    if u8(1):
         let a i32
         let b i32
 
-        a = 1
-        b = 2
+        a = i32(1)
+        b = i32(2)
 
-        if a == b then
+        if a == b:
+            a = i32(6)
+        else if a == i32(0):
+            a = i32(8)
+        else:
+            b = i32(8)
         end
 
-        if a != b then
+        if a != b:
         end
 
-        if a < b then
+        if a < b:
         end
 
-        if a <= b then
+        if a <= b:
         end
 
-        if a > b then
+        if a > b:
         end
 
-        if a >= b then
+        if a >= b:
         end
     end
 
 
-    do
+    if u8(1):
         let a i32
-        a = 10
-        while a > 0 do
+        a = i32(10)
+        while a > 0:
             a = a - i32(1)
         end
     end
@@ -93,6 +102,6 @@ end
 
 
 
-func main()
+func main():
     lang_spec()
 end
